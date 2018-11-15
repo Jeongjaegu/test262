@@ -39,6 +39,17 @@ description: >
  * @param {number} expected The number of agents that are expected to report as active.
  */
 $262.agent.waitUntil = function(typedArray, index, expected) {
+  var Constructor = Object.getPrototypeOf(typedArray).constructor;
+  var temp = new Constructor(typedArray.length);
+
+  try {
+    // This will never actually wait, but that's fine because we only
+    // want to ensure that this typedArray CAN be waited on and is shareable.
+    Atomics.wait(temp, 0, 0n);
+  } catch (error) {
+    $ERROR(Constructor.name + " cannot be used as a shared typed array. " + error.message);
+  }
+
   var agents = 0;
   while ((agents = Atomics.load(typedArray, index)) !== expected) {
     /* nothing */
